@@ -10,8 +10,9 @@
 
     <com.citroncode.motionvievandroidxport.widget.MotionView
         android:id="@+id/main_motion_view"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_width="400dp"
+        android:layout_centerInParent="true"
+        android:layout_height="400dp" />
 
     <LinearLayout
         android:id="@+id/main_motion_text_entity_edit_panel"

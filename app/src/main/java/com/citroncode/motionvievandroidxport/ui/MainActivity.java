@@ -233,7 +233,7 @@ public class MainActivity extends AppCompatActivity implements TextEditorDialogF
     protected void addTextSticker() {
         TextLayer textLayer = createTextLayer();
         TextEntity textEntity = new TextEntity(textLayer, motionView.getWidth(),
-                motionView.getHeight(), fontProvider);
+                motionView.getHeight(), fontProvider, this);
         motionView.addEntityAndPosition(textEntity);
 
         // move text sticker up so that its not hidden under keyboard
@@ -258,7 +258,7 @@ public class MainActivity extends AppCompatActivity implements TextEditorDialogF
         textLayer.setFont(font);
 
         if (BuildConfig.DEBUG) {
-            textLayer.setText("Hello, world :))");
+            textLayer.setText("Helloooooooooo");
         }
 
         return textLayer;

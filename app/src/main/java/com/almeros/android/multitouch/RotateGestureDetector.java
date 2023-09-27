@@ -63,9 +63,11 @@ public class RotateGestureDetector extends TwoFingerGestureDetector {
                 mSloppyGesture = isSloppyGesture(event);
                 if (!mSloppyGesture) {
                     // No, start normal gesture now
-                    mGestureInProgress = mListener.onRotateBegin(this);
+
                 }
 
+                mGestureInProgress = mListener.onRotateBegin(this);
+                
                 break;
 
             case MotionEvent.ACTION_POINTER_UP:

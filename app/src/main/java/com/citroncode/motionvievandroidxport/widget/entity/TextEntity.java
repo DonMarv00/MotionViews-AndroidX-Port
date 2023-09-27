@@ -1,5 +1,6 @@
 package com.citroncode.motionvievandroidxport.widget.entity;
 
+import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -7,13 +8,20 @@ import android.graphics.Paint;
 import android.graphics.PointF;
 
 import android.text.Layout;
+import android.text.Spannable;
+import android.text.SpannableString;
 import android.text.StaticLayout;
 import android.text.TextPaint;
+import android.util.TypedValue;
+import android.view.Gravity;
+import android.view.View;
+import android.widget.TextView;
 
 import androidx.annotation.IntRange;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.citroncode.motionvievandroidxport.utils.BackgroundColorSpan;
 import com.citroncode.motionvievandroidxport.utils.FontProvider;
 import com.citroncode.motionvievandroidxport.viewmodel.TextLayer;
 
@@ -24,15 +32,19 @@ public class TextEntity extends MotionEntity {
     private final FontProvider fontProvider;
     @Nullable
     private Bitmap bitmap;
+    private Context context;
 
     public TextEntity(@NonNull TextLayer textLayer,
                       @IntRange(from = 1) int canvasWidth,
                       @IntRange(from = 1) int canvasHeight,
-                      @NonNull FontProvider fontProvider) {
+                      @NonNull FontProvider fontProvider,
+                      @NonNull Context context) {
         super(textLayer, canvasWidth, canvasHeight);
         this.fontProvider = fontProvider;
 
         this.textPaint = new TextPaint(Paint.ANTI_ALIAS_FLAG);
+
+        this.context = context;
 
         updateEntity(false);
     }
@@ -86,8 +98,13 @@ public class TextEntity extends MotionEntity {
      * @param reuseBmp  the bitmap that will be reused
      * @return bitmap with the text
      */
+    /*
     @NonNull
     private Bitmap createBitmap(@NonNull TextLayer textLayer, @Nullable Bitmap reuseBmp) {
+
+        Paint backgroundPaint = new Paint();
+        backgroundPaint.setColor(Color.RED); // Set your desired background color
+
 
         int boundsWidth = canvasWidth;
 
@@ -107,6 +124,7 @@ public class TextEntity extends MotionEntity {
                 1, // 1 - text spacing multiply
                 1, // 1 - text spacing add
                 true); // true - include padding
+
 
         // calculate height for the entity, min - Limits.MIN_BITMAP_HEIGHT
         int boundsHeight = sl.getHeight();
@@ -137,13 +155,76 @@ public class TextEntity extends MotionEntity {
             canvas.translate(0, textYCoordinate);
         }
 
+
+        // draw the background rectangle
+        backgroundPaint.setColor(Color.YELLOW);
+        backgroundPaint.setStyle(Paint.Style.FILL_AND_STROKE);
+
+// Radius für abgerundete Ecken (in Pixeln)
+        float cornerRadius = 20.0f; // Ändere dies je nach gewünschter Rundung
+
+// Zeichne das Hintergrund-Rechteck mit abgerundeten Ecken
+        canvas.drawRoundRect(0, 0, boundsWidth, boundsHeight, cornerRadius, cornerRadius, backgroundPaint);
+
+        int backgroundWidth = boundsWidth;
+        int backgroundHeight = boundsHeight;
+
+
         //draws static layout on canvas
         sl.draw(canvas);
         canvas.restore();
 
         return bmp;
-    }
+    } */
 
+    @NonNull
+    private Bitmap createBitmap(@NonNull TextLayer textLayer, @Nullable Bitmap reuseBmp) {
+
+        int backgroundColor = Color.BLACK;  // Beispielhafte Hintergrundfarbe (rot)
+        int padding = 16;  // Beispielhafte Polsterung
+        int radius = 10;  // Beispielhafter Radius
+        BackgroundColorSpan backgroundColorSpan = new BackgroundColorSpan(backgroundColor, padding, radius);
+
+        String text = "Dies ist der Text \nder angezeigt werden soll. \nHAhhahha";
+        SpannableString spannableString = new SpannableString(text);
+        spannableString.setSpan(backgroundColorSpan, 0, text.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+
+        int boundsWidth = canvasWidth;
+
+        // Erstellen einer neuen TextView
+        TextView textView = new TextView(context); // 'context' sollte initialisiert werden
+
+        // Setzen des Texts, Textgröße, Textfarbe und Typface
+      //  textView.setText(textLayer.getText());
+        textView.setText(spannableString);
+        textView.setGravity(Gravity.CENTER);
+        textView.setTextSize(TypedValue.COMPLEX_UNIT_PX, textLayer.getFont().getSize() * canvasWidth);
+        textView.setTextColor(textLayer.getFont().getColor());
+        textView.setTypeface(fontProvider.getTypeface(textLayer.getFont().getTypeface()));
+
+        // Messen der TextView-Abmessungen basierend auf dem verfügbaren Platz
+        int widthMeasureSpec = View.MeasureSpec.makeMeasureSpec(boundsWidth, View.MeasureSpec.EXACTLY);
+        int heightMeasureSpec = View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED);
+        textView.measure(widthMeasureSpec, heightMeasureSpec);
+        int measuredWidth = textView.getMeasuredWidth();
+        int measuredHeight = textView.getMeasuredHeight();
+
+        // Erstellen eines neuen Bitmaps basierend auf den gemessenen Abmessungen
+        Bitmap bmp;
+        if (reuseBmp != null && reuseBmp.getWidth() == measuredWidth && reuseBmp.getHeight() == measuredHeight) {
+            bmp = reuseBmp;
+            bmp.eraseColor(Color.TRANSPARENT);
+        } else {
+            bmp = Bitmap.createBitmap(measuredWidth, measuredHeight, Bitmap.Config.ARGB_8888);
+        }
+
+        // Zeichnen der TextView auf das Bitmap
+        Canvas canvas = new Canvas(bmp);
+        textView.layout(0, 0, measuredWidth, measuredHeight);
+        textView.draw(canvas);
+
+        return bmp;
+    }
     @Override
     @NonNull
     public TextLayer getLayer() {
